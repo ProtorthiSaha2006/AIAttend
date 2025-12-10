@@ -1,63 +1,46 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { 
-  ScanFace, 
-  QrCode, 
-  Wifi, 
-  BarChart3, 
-  Shield, 
-  Zap, 
-  Users, 
-  BookOpen,
-  ArrowRight,
-  CheckCircle2,
-  GraduationCap,
-  UserCog,
-} from 'lucide-react';
-
+import { ScanFace, QrCode, Wifi, BarChart3, Shield, Zap, Users, BookOpen, ArrowRight, CheckCircle2, GraduationCap, UserCog } from 'lucide-react';
 export default function LandingPage() {
-  const features = [
-    {
-      icon: ScanFace,
-      title: 'Face Recognition',
-      description: 'AI-powered facial recognition for instant, contactless check-ins with 98% accuracy.',
-    },
-    {
-      icon: QrCode,
-      title: 'QR Code Backup',
-      description: 'Secure QR codes as fallback method, digitally signed and time-limited.',
-    },
-    {
-      icon: Wifi,
-      title: 'Proximity Detection',
-      description: 'Optional Bluetooth/WiFi detection for automated attendance in range.',
-    },
-    {
-      icon: BarChart3,
-      title: 'Real-time Analytics',
-      description: 'Live dashboards with attendance trends, reports, and insights.',
-    },
-    {
-      icon: Shield,
-      title: 'Anti-Fraud System',
-      description: 'Multiple verification layers prevent proxy attendance and spoofing.',
-    },
-    {
-      icon: Zap,
-      title: 'Lightning Fast',
-      description: 'Check-in takes less than 2 seconds. No queues, no delays.',
-    },
-  ];
-
-  const stats = [
-    { value: '50K+', label: 'Students Tracked' },
-    { value: '500+', label: 'Classes Daily' },
-    { value: '98%', label: 'Recognition Accuracy' },
-    { value: '<2s', label: 'Average Check-in' },
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
+  const features = [{
+    icon: ScanFace,
+    title: 'Face Recognition',
+    description: 'AI-powered facial recognition for instant, contactless check-ins with 98% accuracy.'
+  }, {
+    icon: QrCode,
+    title: 'QR Code Backup',
+    description: 'Secure QR codes as fallback method, digitally signed and time-limited.'
+  }, {
+    icon: Wifi,
+    title: 'Proximity Detection',
+    description: 'Optional Bluetooth/WiFi detection for automated attendance in range.'
+  }, {
+    icon: BarChart3,
+    title: 'Real-time Analytics',
+    description: 'Live dashboards with attendance trends, reports, and insights.'
+  }, {
+    icon: Shield,
+    title: 'Anti-Fraud System',
+    description: 'Multiple verification layers prevent proxy attendance and spoofing.'
+  }, {
+    icon: Zap,
+    title: 'Lightning Fast',
+    description: 'Check-in takes less than 2 seconds. No queues, no delays.'
+  }];
+  const stats = [{
+    value: '50K+',
+    label: 'Students Tracked'
+  }, {
+    value: '500+',
+    label: 'Classes Daily'
+  }, {
+    value: '98%',
+    label: 'Recognition Accuracy'
+  }, {
+    value: '<2s',
+    label: 'Average Check-in'
+  }];
+  return <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass-card-solid border-b border-border/50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
@@ -98,15 +81,19 @@ export default function LandingPage() {
             
             <h1 className="text-5xl md:text-7xl font-bold leading-tight animate-slide-up">
               Smart Attendance for{' '}
-              <span className="gradient-text">Modern Universities</span>
+              <span className="gradient-text">RCCIIT</span>
             </h1>
             
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '100ms' }}>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto animate-slide-up" style={{
+            animationDelay: '100ms'
+          }}>
               Replace manual roll calls with AI-powered face recognition. 
               Students check in instantly, professors get real-time insights.
             </p>
             
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: '200ms' }}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style={{
+            animationDelay: '200ms'
+          }}>
               <Button variant="gradient" size="xl" asChild className="group">
                 <Link to="/register">
                   Start Free Trial
@@ -118,34 +105,17 @@ export default function LandingPage() {
               </Button>
             </div>
 
-            <div className="flex items-center justify-center gap-8 pt-8 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '300ms' }}>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-success" />
-                No credit card required
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-success" />
-                Setup in 5 minutes
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-success" />
-                Cancel anytime
-              </div>
-            </div>
+            
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 max-w-4xl mx-auto">
-            {stats.map((stat, index) => (
-              <div 
-                key={stat.label}
-                className="text-center p-6 rounded-2xl glass-card animate-scale-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
+            {stats.map((stat, index) => <div key={stat.label} className="text-center p-6 rounded-2xl glass-card animate-scale-in" style={{
+            animationDelay: `${index * 100}ms`
+          }}>
                 <div className="text-3xl md:text-4xl font-bold gradient-text">{stat.value}</div>
                 <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -164,19 +134,15 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <div
-                key={feature.title}
-                className="group p-6 rounded-2xl bg-card border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300 animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
+            {features.map((feature, index) => <div key={feature.title} className="group p-6 rounded-2xl bg-card border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300 animate-fade-in" style={{
+            animationDelay: `${index * 100}ms`
+          }}>
                 <div className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <feature.icon className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground text-sm">{feature.description}</p>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -194,30 +160,23 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              {
-                step: '01',
-                title: 'Onboard Students',
-                description: 'Students register with their face photo. Our AI creates a unique biometric profile.',
-                icon: Users,
-              },
-              {
-                step: '02',
-                title: 'Create Classes',
-                description: 'Professors set up their courses, schedules, and enrolled students.',
-                icon: BookOpen,
-              },
-              {
-                step: '03',
-                title: 'Auto-Track Attendance',
-                description: 'Students check in via face scan. Attendance is recorded instantly.',
-                icon: ScanFace,
-              },
-            ].map((item, index) => (
-              <div key={item.step} className="relative">
-                {index < 2 && (
-                  <div className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-primary/50 to-transparent -translate-x-1/2" />
-                )}
+            {[{
+            step: '01',
+            title: 'Onboard Students',
+            description: 'Students register with their face photo. Our AI creates a unique biometric profile.',
+            icon: Users
+          }, {
+            step: '02',
+            title: 'Create Classes',
+            description: 'Professors set up their courses, schedules, and enrolled students.',
+            icon: BookOpen
+          }, {
+            step: '03',
+            title: 'Auto-Track Attendance',
+            description: 'Students check in via face scan. Attendance is recorded instantly.',
+            icon: ScanFace
+          }].map((item, index) => <div key={item.step} className="relative">
+                {index < 2 && <div className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-primary/50 to-transparent -translate-x-1/2" />}
                 <div className="text-center">
                   <div className="w-32 h-32 mx-auto rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mb-6 relative">
                     <item.icon className="w-14 h-14 text-primary" />
@@ -228,8 +187,7 @@ export default function LandingPage() {
                   <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
                   <p className="text-muted-foreground text-sm">{item.description}</p>
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -286,6 +244,5 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 }
