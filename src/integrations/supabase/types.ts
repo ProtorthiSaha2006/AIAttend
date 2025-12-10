@@ -14,6 +14,198 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendance_records: {
+        Row: {
+          class_id: string
+          id: string
+          method_used: string
+          session_id: string
+          status: string
+          student_id: string
+          timestamp: string
+          verification_score: number | null
+        }
+        Insert: {
+          class_id: string
+          id?: string
+          method_used: string
+          session_id: string
+          status?: string
+          student_id: string
+          timestamp?: string
+          verification_score?: number | null
+        }
+        Update: {
+          class_id?: string
+          id?: string
+          method_used?: string
+          session_id?: string
+          status?: string
+          student_id?: string
+          timestamp?: string
+          verification_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_records_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "attendance_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance_sessions: {
+        Row: {
+          class_id: string
+          created_at: string
+          date: string
+          end_time: string | null
+          id: string
+          is_active: boolean
+          qr_secret: string | null
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          date?: string
+          end_time?: string | null
+          id?: string
+          is_active?: boolean
+          qr_secret?: string | null
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          date?: string
+          end_time?: string | null
+          id?: string
+          is_active?: boolean
+          qr_secret?: string | null
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_sessions_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_enrollments: {
+        Row: {
+          class_id: string
+          enrolled_at: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          class_id: string
+          enrolled_at?: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          class_id?: string
+          enrolled_at?: string
+          id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_enrollments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_schedules: {
+        Row: {
+          class_id: string
+          created_at: string
+          day: string
+          end_time: string
+          id: string
+          start_time: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          day: string
+          end_time: string
+          id?: string
+          start_time: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          day?: string
+          end_time?: string
+          id?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_schedules_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          code: string
+          created_at: string
+          department: string
+          id: string
+          professor_id: string
+          room: string
+          semester: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          department: string
+          id?: string
+          professor_id: string
+          room: string
+          semester: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          department?: string
+          id?: string
+          professor_id?: string
+          room?: string
+          semester?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

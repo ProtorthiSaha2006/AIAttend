@@ -3,6 +3,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { QRScanner } from '@/components/attendance/QRScanner';
 import { 
   ScanFace, 
   Camera, 
@@ -280,46 +281,16 @@ export default function CheckInPage() {
 
           {/* QR Code */}
           {selectedMethod === 'qr' && (
-            <div className="p-8 text-center">
-              {status === 'idle' && (
-                <>
-                  <div className="w-64 h-64 mx-auto rounded-2xl bg-white p-4 shadow-lg mb-6">
-                    {/* Mock QR Code */}
-                    <div className="w-full h-full bg-foreground rounded-lg relative overflow-hidden">
-                      <div className="absolute inset-4 grid grid-cols-8 gap-0.5">
-                        {Array.from({ length: 64 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={Math.random() > 0.5 ? "bg-white" : "bg-transparent"}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground mb-4">Scan the class QR code to check in</p>
-                  <Button variant="gradient" size="lg" onClick={handleQRCheckIn}>
-                    <QrCode className="w-5 h-5 mr-2" />
-                    Simulate QR Scan
-                  </Button>
-                </>
-              )}
-
-              {status === 'processing' && (
-                <div className="py-12">
-                  <Loader2 className="w-12 h-12 mx-auto text-primary animate-spin mb-4" />
-                  <p className="text-muted-foreground">Verifying QR code...</p>
-                </div>
-              )}
-
-              {status === 'success' && (
-                <div className="py-12">
-                  <div className="w-24 h-24 mx-auto rounded-full bg-success/20 flex items-center justify-center mb-4 animate-scale-in">
-                    <CheckCircle2 className="w-12 h-12 text-success" />
-                  </div>
-                  <h3 className="text-xl font-bold text-success mb-2">Check-in Successful!</h3>
-                  <p className="text-muted-foreground">QR code verified</p>
-                </div>
-              )}
+            <div className="p-8">
+              <QRScanner
+                onSuccess={(result) => {
+                  setStatus('success');
+                  toast({
+                    title: 'Check-in successful!',
+                    description: `Marked ${result.status} for ${result.className}`,
+                  });
+                }}
+              />
             </div>
           )}
 
