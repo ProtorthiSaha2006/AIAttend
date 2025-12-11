@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, CheckCircle, XCircle, Loader2, Scan, AlertCircle } from 'lucide-react';
+import { Camera, CheckCircle, XCircle, Loader2, Scan, AlertCircle, PartyPopper } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -11,13 +11,16 @@ interface FaceCheckInProps {
   onSuccess?: () => void;
 }
 
+type StatusType = 'idle' | 'success' | 'already_checked_in' | 'error';
+
 export function FaceCheckIn({ sessionId, className, onSuccess }: FaceCheckInProps) {
   const [isCapturing, setIsCapturing] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<StatusType>('idle');
   const [matchScore, setMatchScore] = useState<number | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -48,6 +51,7 @@ export function FaceCheckIn({ sessionId, className, onSuccess }: FaceCheckInProp
     setIsCapturing(true);
     setStatus('idle');
     setMatchScore(null);
+    setStatusMessage('');
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -143,17 +147,30 @@ export function FaceCheckIn({ sessionId, className, onSuccess }: FaceCheckInProp
       if (data.success) {
         setStatus('success');
         setMatchScore(data.matchScore);
-        toast.success(data.message);
+        setStatusMessage('Attendance marked successfully!');
+        toast.success('Attendance marked successfully!');
         stopCamera();
         onSuccess?.();
       } else {
-        setStatus('error');
-        setMatchScore(data.matchScore || null);
-        toast.error(data.error || 'Verification failed');
+        // Check if it's a duplicate attendance
+        const errorMsg = data.error || 'Verification failed';
+        if (errorMsg.toLowerCase().includes('already marked') || errorMsg.toLowerCase().includes('already checked')) {
+          setStatus('already_checked_in');
+          setStatusMessage('You have already checked in for this session.');
+          toast.info('You have already checked in for this session.');
+          stopCamera();
+          onSuccess?.();
+        } else {
+          setStatus('error');
+          setMatchScore(data.matchScore || null);
+          setStatusMessage(errorMsg);
+          toast.error(errorMsg);
+        }
       }
     } catch (error) {
       console.error('Verification error:', error);
       setStatus('error');
+      setStatusMessage('Failed to verify face. Please try again.');
       toast.error('Failed to verify face. Please try again.');
     } finally {
       setIsVerifying(false);
@@ -164,10 +181,13 @@ export function FaceCheckIn({ sessionId, className, onSuccess }: FaceCheckInProp
     setStatus('idle');
     setMatchScore(null);
     setCameraError(null);
+    setStatusMessage('');
     if (!isCapturing) {
       startCamera();
     }
   };
+
+  const isSuccessState = status === 'success' || status === 'already_checked_in';
 
   return (
     <Card className={className}>
@@ -220,23 +240,39 @@ export function FaceCheckIn({ sessionId, className, onSuccess }: FaceCheckInProp
           )}
           
           {status === 'success' && (
-            <div className="absolute inset-0 bg-green-500/20 flex flex-col items-center justify-center">
-              <CheckCircle className="h-16 w-16 text-green-500 mb-2" />
-              <span className="text-green-700 font-medium">Verified!</span>
+            <div className="absolute inset-0 bg-green-500/20 flex flex-col items-center justify-center p-4">
+              <PartyPopper className="h-16 w-16 text-green-500 mb-2" />
+              <span className="text-green-700 font-bold text-lg">Check-in Successful!</span>
+              <span className="text-green-600 text-center mt-1">
+                Your attendance has been recorded.
+              </span>
               {matchScore && (
-                <span className="text-sm text-green-600">
-                  Match: {(matchScore * 100).toFixed(0)}%
+                <span className="text-sm text-green-600 mt-2">
+                  Face Match: {(matchScore * 100).toFixed(0)}%
                 </span>
               )}
             </div>
           )}
+
+          {status === 'already_checked_in' && (
+            <div className="absolute inset-0 bg-blue-500/20 flex flex-col items-center justify-center p-4">
+              <CheckCircle className="h-16 w-16 text-blue-500 mb-2" />
+              <span className="text-blue-700 font-bold text-lg">Already Checked In</span>
+              <span className="text-blue-600 text-center mt-1">
+                Your attendance was already recorded for this session.
+              </span>
+            </div>
+          )}
           
           {status === 'error' && !isCapturing && (
-            <div className="absolute inset-0 bg-red-500/20 flex flex-col items-center justify-center">
+            <div className="absolute inset-0 bg-red-500/20 flex flex-col items-center justify-center p-4">
               <XCircle className="h-16 w-16 text-red-500 mb-2" />
               <span className="text-red-700 font-medium">Verification Failed</span>
+              <span className="text-sm text-red-600 text-center mt-1">
+                {statusMessage || 'Please try again'}
+              </span>
               {matchScore !== null && (
-                <span className="text-sm text-red-600">
+                <span className="text-sm text-red-600 mt-1">
                   Match: {(matchScore * 100).toFixed(0)}%
                 </span>
               )}
@@ -284,9 +320,15 @@ export function FaceCheckIn({ sessionId, className, onSuccess }: FaceCheckInProp
             </Button>
           )}
           
-          {(status === 'success' || status === 'error') && !isCapturing && (
-            <Button onClick={reset} className="w-full" variant={status === 'success' ? 'outline' : 'default'}>
-              {status === 'success' ? 'Done' : 'Try Again'}
+          {isSuccessState && !isCapturing && (
+            <Button onClick={reset} className="w-full" variant="outline">
+              Done
+            </Button>
+          )}
+
+          {status === 'error' && !isCapturing && (
+            <Button onClick={reset} className="w-full">
+              Try Again
             </Button>
           )}
         </div>

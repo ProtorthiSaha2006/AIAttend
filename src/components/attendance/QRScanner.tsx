@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, CameraOff, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Camera, CameraOff, CheckCircle, XCircle, Loader2, PartyPopper, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,6 +16,7 @@ export function QRScanner({ onSuccess }: QRScannerProps) {
   const [isInitializing, setIsInitializing] = useState(false);
   const [scanResult, setScanResult] = useState<{
     success: boolean;
+    alreadyCheckedIn?: boolean;
     message: string;
     className?: string;
     status?: string;
@@ -59,25 +60,41 @@ export function QRScanner({ onSuccess }: QRScannerProps) {
       if (data.success) {
         setScanResult({
           success: true,
-          message: `Attendance marked as ${data.status}!`,
+          message: 'Attendance marked successfully!',
           className: data.className,
           status: data.status,
         });
         onSuccess?.({ className: data.className, status: data.status });
         toast({
-          title: 'Success!',
-          description: `Attendance marked for ${data.className}`,
+          title: 'Check-in Successful!',
+          description: `Your attendance for ${data.className} has been recorded.`,
         });
       } else {
-        setScanResult({
-          success: false,
-          message: data.error || 'Verification failed',
-        });
-        toast({
-          title: 'Error',
-          description: data.error || 'Verification failed',
-          variant: 'destructive',
-        });
+        const errorMsg = data.error || 'Verification failed';
+        // Check for duplicate attendance
+        if (errorMsg.toLowerCase().includes('already marked') || errorMsg.toLowerCase().includes('already checked')) {
+          setScanResult({
+            success: true,
+            alreadyCheckedIn: true,
+            message: 'You have already checked in for this session.',
+            className: data.className,
+          });
+          toast({
+            title: 'Already Checked In',
+            description: 'Your attendance was already recorded for this session.',
+          });
+          onSuccess?.({ className: data.className || '', status: 'present' });
+        } else {
+          setScanResult({
+            success: false,
+            message: errorMsg,
+          });
+          toast({
+            title: 'Error',
+            description: errorMsg,
+            variant: 'destructive',
+          });
+        }
       }
     } catch (error: any) {
       console.error('Error verifying QR:', error);
@@ -174,24 +191,39 @@ export function QRScanner({ onSuccess }: QRScannerProps) {
       <CardContent className="flex flex-col items-center space-y-4">
         {scanResult ? (
           <div className="w-full flex flex-col items-center space-y-4 py-8">
-            {scanResult.success ? (
+            {scanResult.success && !scanResult.alreadyCheckedIn ? (
               <>
-                <CheckCircle className="h-16 w-16 text-green-500" />
+                <PartyPopper className="h-16 w-16 text-green-500" />
                 <div className="text-center">
-                  <p className="font-semibold text-lg">{scanResult.message}</p>
+                  <p className="font-bold text-lg text-green-700">Check-in Successful!</p>
+                  <p className="text-green-600 mt-1">Your attendance has been recorded.</p>
                   {scanResult.className && (
-                    <p className="text-muted-foreground">{scanResult.className}</p>
+                    <p className="text-muted-foreground mt-2">{scanResult.className}</p>
+                  )}
+                </div>
+              </>
+            ) : scanResult.alreadyCheckedIn ? (
+              <>
+                <Info className="h-16 w-16 text-blue-500" />
+                <div className="text-center">
+                  <p className="font-bold text-lg text-blue-700">Already Checked In</p>
+                  <p className="text-blue-600 mt-1">Your attendance was already recorded for this session.</p>
+                  {scanResult.className && (
+                    <p className="text-muted-foreground mt-2">{scanResult.className}</p>
                   )}
                 </div>
               </>
             ) : (
               <>
                 <XCircle className="h-16 w-16 text-destructive" />
-                <p className="text-center text-muted-foreground">{scanResult.message}</p>
+                <div className="text-center">
+                  <p className="font-semibold text-lg text-destructive">Check-in Failed</p>
+                  <p className="text-muted-foreground mt-1">{scanResult.message}</p>
+                </div>
               </>
             )}
             <Button onClick={resetScanner} variant="outline">
-              Scan Again
+              {scanResult.success || scanResult.alreadyCheckedIn ? 'Done' : 'Try Again'}
             </Button>
           </div>
         ) : isVerifying ? (

@@ -12,7 +12,9 @@ import {
   XCircle, 
   Navigation,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  PartyPopper,
+  Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -39,7 +41,7 @@ interface ClassLocation {
 
 export function ProximityCheckIn({ sessionId, classId, classRoom, onSuccess }: ProximityCheckInProps) {
   const [location, setLocation] = useState<LocationState>({ status: 'idle' });
-  const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'success' | 'failed'>('idle');
+  const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'success' | 'already_checked_in' | 'failed'>('idle');
   const [classLocation, setClassLocation] = useState<ClassLocation | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
   const { user } = useAuth();
@@ -148,19 +150,23 @@ export function ProximityCheckIn({ sessionId, classId, classRoom, onSuccess }: P
 
         if (error) {
           if (error.code === '23505') {
+            setVerificationStatus('already_checked_in');
             toast({
-              title: "Already checked in",
-              description: "You have already marked attendance for this session.",
-              variant: "destructive",
+              title: "Already Checked In",
+              description: "Your attendance was already recorded for this session.",
             });
+            onSuccess?.();
           } else {
             throw error;
           }
-          setVerificationStatus('failed');
           return;
         }
 
         setVerificationStatus('success');
+        toast({
+          title: "Check-in Successful!",
+          description: "Your attendance has been recorded.",
+        });
         onSuccess?.();
         return;
       }
@@ -193,22 +199,22 @@ export function ProximityCheckIn({ sessionId, classId, classRoom, onSuccess }: P
 
         if (error) {
           if (error.code === '23505') {
+            setVerificationStatus('already_checked_in');
             toast({
-              title: "Already checked in",
-              description: "You have already marked attendance for this session.",
-              variant: "destructive",
+              title: "Already Checked In",
+              description: "Your attendance was already recorded for this session.",
             });
+            onSuccess?.();
           } else {
             throw error;
           }
-          setVerificationStatus('failed');
           return;
         }
 
         setVerificationStatus('success');
         toast({
-          title: "Check-in successful!",
-          description: `You are ${Math.round(distanceMeters)}m from ${classRoom}. Attendance marked.`,
+          title: "Check-in Successful!",
+          description: `You are ${Math.round(distanceMeters)}m from ${classRoom}. Attendance recorded.`,
         });
         onSuccess?.();
       } else {
@@ -253,7 +259,8 @@ export function ProximityCheckIn({ sessionId, classId, classRoom, onSuccess }: P
         <div className="absolute inset-0 flex items-center justify-center">
           <div className={cn(
             "w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300",
-            verificationStatus === 'success' && "bg-success",
+            verificationStatus === 'success' && "bg-green-500",
+            verificationStatus === 'already_checked_in' && "bg-blue-500",
             verificationStatus === 'failed' && "bg-destructive",
             verificationStatus === 'idle' && location.status === 'acquired' && "bg-primary",
             (location.status === 'idle' || location.status === 'requesting') && verificationStatus === 'idle' && "gradient-bg",
@@ -272,7 +279,10 @@ export function ProximityCheckIn({ sessionId, classId, classRoom, onSuccess }: P
               <Loader2 className="w-10 h-10 text-primary-foreground animate-spin" />
             )}
             {verificationStatus === 'success' && (
-              <CheckCircle2 className="w-10 h-10 text-primary-foreground" />
+              <PartyPopper className="w-10 h-10 text-primary-foreground" />
+            )}
+            {verificationStatus === 'already_checked_in' && (
+              <Info className="w-10 h-10 text-primary-foreground" />
             )}
             {verificationStatus === 'failed' && (
               <XCircle className="w-10 h-10 text-primary-foreground" />
@@ -335,13 +345,21 @@ export function ProximityCheckIn({ sessionId, classId, classRoom, onSuccess }: P
 
         {verificationStatus === 'success' && (
           <>
-            <h3 className="text-xl font-bold text-success">Check-in Successful!</h3>
-            <p className="text-muted-foreground">
+            <h3 className="text-xl font-bold text-green-600">Check-in Successful!</h3>
+            <p className="text-green-600">Your attendance has been recorded.</p>
+            <p className="text-muted-foreground text-sm">
               {distance !== null 
                 ? `You are ${Math.round(distance)}m from ${classRoom}` 
                 : `Proximity verified at ${classRoom}`
               }
             </p>
+          </>
+        )}
+
+        {verificationStatus === 'already_checked_in' && (
+          <>
+            <h3 className="text-xl font-bold text-blue-600">Already Checked In</h3>
+            <p className="text-blue-600">Your attendance was already recorded for this session.</p>
           </>
         )}
 
@@ -380,10 +398,10 @@ export function ProximityCheckIn({ sessionId, classId, classRoom, onSuccess }: P
           </Button>
         )}
 
-        {(verificationStatus === 'success' || verificationStatus === 'failed') && (
+        {(verificationStatus === 'success' || verificationStatus === 'already_checked_in' || verificationStatus === 'failed') && (
           <Button variant="outline" size="lg" onClick={reset}>
             <RefreshCw className="w-5 h-5 mr-2" />
-            {verificationStatus === 'failed' ? 'Try Again' : 'Check Another Class'}
+            {verificationStatus === 'failed' ? 'Try Again' : 'Done'}
           </Button>
         )}
       </div>
