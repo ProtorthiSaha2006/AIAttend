@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,10 @@ import { ScanFace, Mail, Lock, ArrowLeft, Loader2 } from 'lucide-react';
 import { loginSchema } from '@/lib/validations/auth';
 
 export default function LoginPage() {
+  const location = useLocation();
+  const state = (location.state || {}) as { role?: 'student' | 'professor' };
+  const activeRole = state.role;
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -119,10 +123,25 @@ export default function LoginPage() {
             Back to home
           </Link>
 
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold">Welcome back</h2>
-            <p className="text-muted-foreground">
-              Sign in to your account to continue
+          <div className="space-y-1">
+            {activeRole && (
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                {activeRole === 'student' ? 'Student sign in' : 'Professor sign in'}
+              </p>
+            )}
+            <h2 className="text-3xl font-bold">
+              {activeRole === 'student'
+                ? 'Student Login'
+                : activeRole === 'professor'
+                ? 'Professor Login'
+                : 'Welcome back'}
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              {activeRole === 'student'
+                ? 'Sign in to your student dashboard'
+                : activeRole === 'professor'
+                ? 'Sign in to your faculty dashboard'
+                : 'Sign in to your account to continue'}
             </p>
           </div>
 

@@ -370,13 +370,21 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button size="xl" variant="glass" asChild className="bg-white/10 hover:bg-white/20 border-white/20 text-white">
-                  <Link to="/register" className="flex items-center gap-2">
+                  <Link
+                    to="/register"
+                    state={{ role: "student" }}
+                    className="flex items-center gap-2"
+                  >
                     <GraduationCap className="w-5 h-5" />
                     Student Sign Up
                   </Link>
                 </Button>
                 <Button size="xl" variant="glass" asChild className="bg-white/10 hover:bg-white/20 border-white/20 text-white">
-                  <Link to="/register" className="flex items-center gap-2">
+                  <Link
+                    to="/register"
+                    state={{ role: "professor" }}
+                    className="flex items-center gap-2"
+                  >
                     <UserCog className="w-5 h-5" />
                     Faculty Sign Up
                   </Link>

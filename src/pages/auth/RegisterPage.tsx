@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,12 +10,16 @@ import { ScanFace, Mail, Lock, User, Building2, ArrowLeft, Loader2, Hash } from 
 import { registerSchema } from '@/lib/validations/auth';
 
 export default function RegisterPage() {
+  const location = useLocation();
+  const state = (location.state || {}) as { role?: 'student' | 'professor' };
+  const initialRole: 'student' | 'professor' = state.role === 'professor' ? 'professor' : 'student';
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'student' as 'student' | 'professor',
+    role: initialRole,
     department: '',
     rollNumber: '',
     employeeId: '',
@@ -170,10 +174,15 @@ export default function RegisterPage() {
             Back to home
           </Link>
 
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold">Create an account</h2>
-            <p className="text-muted-foreground">
-              Fill in your details to get started
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+              {formData.role === 'student' ? 'Student sign up' : 'Professor sign up'}
+            </p>
+            <h2 className="text-3xl font-bold">
+              {formData.role === 'student' ? 'Create your student account' : 'Create your faculty account'}
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              You&apos;re signing up as a {formData.role === 'student' ? 'student' : 'professor'}.
             </p>
           </div>
 
@@ -342,7 +351,11 @@ export default function RegisterPage() {
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
               Already have an account?{' '}
-              <Link to="/login" className="text-primary hover:underline font-medium">
+              <Link
+                to="/login"
+                state={{ role: formData.role }}
+                className="text-primary hover:underline font-medium"
+              >
                 Sign in
               </Link>
             </p>
