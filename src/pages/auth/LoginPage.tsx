@@ -69,7 +69,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900">
       {/* Left Panel - Decorative */}
       <div className="hidden lg:flex lg:w-1/2 gradient-bg relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-50" />
@@ -103,8 +103,8 @@ export default function LoginPage() {
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 lg:p-12 bg-background">
-        <div className="w-full max-w-md space-y-8 animate-fade-in">
+      <div className="flex-1 flex flex-col justify-center items-center p-6 lg:p-12">
+        <div className="w-full max-w-md space-y-8 animate-fade-in rounded-3xl bg-background/90 dark:bg-slate-900/80 backdrop-blur-2xl border border-border/60 shadow-[0_24px_65px_rgba(15,23,42,0.55)] p-8 lg:p-10">
           <div className="lg:hidden flex justify-center mb-8">
             <div className="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center shadow-glow">
               <ScanFace className="w-10 h-10 text-primary-foreground" />
