@@ -23,57 +23,6 @@ export function QRScanner({ onSuccess }: QRScannerProps) {
   } | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const { toast } = useToast();
-  const [hasLocationPermission, setHasLocationPermission] = useState(false);
-
-  const getCurrentPosition = () => {
-    return new Promise<GeolocationPosition>((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error('Geolocation is not supported by your browser'));
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => resolve(position),
-        (error) => {
-          let errorMessage = 'Unable to retrieve your location';
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage = 'Location permission denied. Please enable location access to check in.';
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMessage = 'Location information is unavailable.';
-              break;
-            case error.TIMEOUT:
-              errorMessage = 'Location request timed out. Please try again.';
-              break;
-          }
-          reject(new Error(errorMessage));
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        }
-      );
-    });
-  };
-
-  const ensureLocationPermission = async () => {
-    try {
-      const position = await getCurrentPosition();
-      setHasLocationPermission(true);
-      return position;
-    } catch (error: any) {
-      setHasLocationPermission(false);
-      const message = error?.message || 'Location permission is required for QR check-in.';
-      toast({
-        title: 'Location Required',
-        description: message,
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  };
 
   const stopScanning = useCallback(async () => {
     if (scannerRef.current) {
@@ -100,16 +49,9 @@ export function QRScanner({ onSuccess }: QRScannerProps) {
     try {
       console.log('Scanned QR data:', decodedText);
 
-      // Immediately capture GPS after successful QR scan
-      const position = await ensureLocationPermission();
-      const { latitude, longitude, accuracy } = position.coords;
-
       const { data, error } = await supabase.functions.invoke('verify-qr', {
         body: { 
           qrData: decodedText,
-          latitude,
-          longitude,
-          accuracy,
         },
       });
 
@@ -121,22 +63,6 @@ export function QRScanner({ onSuccess }: QRScannerProps) {
         if (errorContext) {
           try {
             const parsed = await errorContext.clone().json();
-
-            // Explicit out-of-range handling when distance info is present
-            if (parsed?.distance !== undefined && parsed?.allowedRadius !== undefined) {
-              const desc = `You are ${parsed.distance}m away. Must be within ${parsed.allowedRadius}m of ${parsed.room || 'the classroom'}.`;
-              setScanResult({
-                success: false,
-                message: desc,
-              });
-              toast({
-                title: 'Out of Range',
-                description: desc,
-                variant: 'destructive',
-              });
-              return;
-            }
-
             const errMsg = parsed?.error || parsed?.message || 'Verification failed';
             setScanResult({
               success: false,
@@ -180,21 +106,6 @@ export function QRScanner({ onSuccess }: QRScannerProps) {
         });
       } else {
         const errorMsg = data.error || 'Verification failed';
-
-        // Explicit out-of-range handling from successful JSON body
-        if (data.distance !== undefined && data.allowedRadius !== undefined) {
-          const desc = `You are ${data.distance}m away. Must be within ${data.allowedRadius}m of ${data.room || 'the classroom'}.`;
-          setScanResult({
-            success: false,
-            message: desc,
-          });
-          toast({
-            title: 'Out of Range',
-            description: desc,
-            variant: 'destructive',
-          });
-          return;
-        }
 
         // Check for duplicate attendance
         if (errorMsg.toLowerCase().includes('already marked') || errorMsg.toLowerCase().includes('already checked')) {

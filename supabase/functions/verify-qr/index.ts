@@ -5,22 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Haversine formula to calculate distance between two GPS coordinates (in meters)
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371e3; // Earth's radius in meters
-  const φ1 = (lat1 * Math.PI) / 180;
-  const φ2 = (lat2 * Math.PI) / 180;
-  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-
-  const a =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c; // Distance in meters
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -57,28 +41,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { qrData, latitude, longitude, accuracy } = await req.json();
+    const { qrData } = await req.json();
     
     if (!qrData) {
       return new Response(JSON.stringify({ error: 'QR data is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // GPS is mandatory for QR-based attendance
-    if (latitude === undefined || longitude === undefined) {
-      return new Response(JSON.stringify({ 
-        error: 'Location required: please enable GPS to complete QR verification.' 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Validate coordinate ranges
-    if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-      return new Response(JSON.stringify({ error: 'Invalid GPS coordinates' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -133,7 +99,7 @@ Deno.serve(async (req) => {
     // Verify session exists and is active
     const { data: session, error: sessionError } = await supabaseAdmin
       .from('attendance_sessions')
-      .select('*, classes!inner(id, subject, latitude, longitude, proximity_radius_meters, room)')
+      .select('*, classes!inner(id, subject)')
       .eq('id', sessionId)
       .eq('is_active', true)
       .single();
@@ -186,41 +152,6 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ 
         error: 'Already checked in for this session',
         alreadyCheckedIn: true 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // -------------------------------
-    // Geofence (GPS proximity) check
-    // -------------------------------
-    const classData = session.classes;
-
-    if (classData.latitude === null || classData.longitude === null) {
-      return new Response(JSON.stringify({ 
-        error: 'Classroom location is not configured. Please contact your instructor.' 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const allowedRadius = classData.proximity_radius_meters || 50; // meters
-
-    const distance = calculateDistance(
-      latitude,
-      longitude,
-      classData.latitude,
-      classData.longitude
-    );
-
-    if (distance > allowedRadius) {
-      return new Response(JSON.stringify({
-        error: 'Verification Failed: You are not within the classroom proximity.',
-        distance: Math.round(distance),
-        allowedRadius,
-        room: classData.room,
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
